@@ -8,8 +8,19 @@ import java.math.BigDecimal;
  * Clase de utilidades para el tamaño de ficheros.
  *
  */
-public class FileSizeUtils {
+public final class FileSizeUtils {
 
+
+    /**
+     * Cadena de escalas de Bytes.
+     * Bytes, Kilos, Megas, Gigas, Teras, Petas, Exa, Zettas, Yottas, ...
+     */
+    public static final String BYTE_SCALE = "BKMGTPEZY";
+
+    /**
+     * Cantidad de saltos entre escalas.
+     */
+    private static final long BYTES_SCALE_NUMBER = 1024;
 
     /**
      * Evitar instancias de la clase estática.
@@ -29,11 +40,17 @@ public class FileSizeUtils {
         return scaleSize(size, scale, Integer.class);
     }
 
+
     /**
-     * Cadena de escalas de Bytes.
-     * Bytes, Kilos, Megas, Gigas, Teras, Petas, Exa, Zettas, Yottas, ...
+     * Friendly method to scale conversion to Integer.
+     *
+     * @param size
+     * @param scale
+     * @return
      */
-    public static final String BYTE_SCALE = "BKMGTPEZY";
+    public static double scaleSizeToDouble (long size, String scale) {
+        return scaleSize(size, scale, Double.class);
+    }
 
     /**
      * Obtiene el divisor del tamaño para escalar el tamaño de bytes.
@@ -42,7 +59,7 @@ public class FileSizeUtils {
      * @return
      */
     public static long getShift (String scale) {
-        return (StringUtils.isEmpty(scale)) ? 0 : StringUtils.indexOfIgnoreCase(BYTE_SCALE, StringUtils.substring(scale,0,1))*10;
+        return (StringUtils.isEmpty(scale)) ? 0 : StringUtils.indexOfIgnoreCase(BYTE_SCALE, StringUtils.substring(scale,0,1));
     }
 
     /**
@@ -59,24 +76,24 @@ public class FileSizeUtils {
      * @return
      */
     public static <T extends Number> T scaleSize (long size, String scale, Class<T> clazz) {
-        long flsize = invalidSize(size) ? -1 : size;
-        long lsize  = flsize >> getShift(scale);
+        T result = null;
+        double flsize = invalidSize(size) ? -1.0 : size;
+        double dsize  = flsize / Math.pow(BYTES_SCALE_NUMBER,getShift(scale));
         // comprobamos que no resulte negativo.
-        if (lsize < 0) {
-            lsize = -1;
+        if (dsize < 0) {
+            dsize = -1;
         }
 
         if (Integer.class.isAssignableFrom(clazz)) {
-            return (T) new Integer(new Long(lsize).intValue());
+            result = (T) Integer.valueOf(Double.valueOf(dsize).intValue());
         } else if (Long.class.isAssignableFrom(clazz)) {
-            return (T) new Long(lsize);
+            result = (T) Long.valueOf(Double.valueOf(dsize).longValue());
         } else if (Double.class.isAssignableFrom(clazz)) {
-            return (T) new Double(new Long(lsize).doubleValue());
+            result = (T) Double.valueOf(dsize);
         } else if (BigDecimal.class.isAssignableFrom(clazz)) {
-            return (T) BigDecimal.valueOf(lsize);
-        } else {
-            return null;
+            result = (T) BigDecimal.valueOf(dsize);
         }
+        return result;
     }
 
     /**
@@ -91,3 +108,4 @@ public class FileSizeUtils {
     }
 
 }
+

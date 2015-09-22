@@ -30,9 +30,9 @@ public class FileSizeUtilsTest {
 
         _expect: {
             for (int index = 0; index < shift.length; index++) {
-                assertThat(shift[index], equalTo(index*10L));
+                assertThat(shift[index], equalTo(index*1L));
             }
-            assertThat(shift, arrayContaining(0L, 10L, 20L, 30L, 40L, 50L, 60L, 70L, 80L));
+            assertThat(shift, arrayContaining(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L));
         }
     }
 
@@ -116,7 +116,7 @@ public class FileSizeUtilsTest {
             scaledSize = FileSizeUtils.scaleSize(size, scale, Double.class);
         }
         _expect: {
-            assertThat(scaledSize, equalTo((double)(size/1024/1024)));
+            assertThat(scaledSize, equalTo(((double)size/1024/1024)));
         }
     }
 
@@ -157,6 +157,26 @@ public class FileSizeUtilsTest {
         }
         _expect: {
             assertThat(scaledSize, equalTo((int)(size/1024/1024)));
+        }
+    }
+
+    /**
+     * @see FileSizeUtils#scaleSizeToDouble(long, String)
+     */
+    @Test
+    public void testScaleSizeToDouble () {
+        String scale = null;
+        long size = -1L;
+        double scaledSize = -1.0;
+        _given: {
+            scale = "M";
+            size = 123456789L;
+        }
+        _then: {
+            scaledSize = FileSizeUtils.scaleSizeToDouble(size, scale);
+        }
+        _expect: {
+            assertThat(scaledSize, equalTo(((double)size/1024/1024)));
         }
     }
 
